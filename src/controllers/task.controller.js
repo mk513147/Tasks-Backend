@@ -8,3 +8,22 @@ export const createTask = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
+
+export const getTasks = async (req, res) => {
+    try {
+        const tasks = await Task.find();
+        res.status(200).json(tasks);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const deleteTask = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        await Task.findByIdAndDelete(taskId);
+        res.status(200).json({ message: "Task deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
