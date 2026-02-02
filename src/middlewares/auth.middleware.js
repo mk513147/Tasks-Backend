@@ -1,24 +1,28 @@
 import jwt from 'jsonwebtoken';
 import { apiError } from '../utils/apiError.js';
-import { User } from "../models/user.model.js";
+import User from "../models/user.model.js";
 
 
-export const authValidator = async (req, resizeBy, next) => {
+export const authValidator = async (req, res, next) => {
     try {
-        const token = req.cookies?.token || req.header("Authorization")?.replace("Bearer ", "");
+        const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
 
-        if (!token) throw new apiError(401, "Unauthorized: Access");
+        if (!token) {
+            return next(new apiError(401, "Unauthorized: No access token"));
+        }
 
         const decodedObj = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-        const user = await User.findById(decodedObj?._id).select("-password");
+        const user = await User.findById(decodedObj?.sub).select("-password");
 
-        if (!user) throw new apiError(401, "Unauthorized: User not found");
+        if (!user) {
+            return next(new apiError(401, "Unauthorized: User not found"));
+        }
 
         req.user = user;
         next();
 
     } catch (error) {
-        throw new apiError(401, error?.message || `Invalid access token`)
+        return next(new apiError(401, "Invalid or expired access token"));
     }
 }

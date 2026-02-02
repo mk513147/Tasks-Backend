@@ -1,8 +1,17 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken';
+
 
 const userSchema = new Schema({
     username: {
+        type: String,
+        required: true,
+        trim: true,
+        unique: true,
+        lowercase: true,
+    },
+    fullName: {
         type: String,
         required: true,
         trim: true
@@ -12,6 +21,7 @@ const userSchema = new Schema({
         required: true,
         unique: true,
         trim: true,
+        lowercase: true,
     },
     password: {
         type: String,
@@ -26,6 +36,12 @@ const userSchema = new Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    deletedAt: {
+        type: Date,
+        default: null
+    }, refreshToken: {
+        type: String,
     }
 }, {
     timestamps: true
@@ -39,6 +55,28 @@ userSchema.pre('save', async function (next) {
 
 userSchema.methods.comparePassword = async function (givenPassword) {
     return await bcrypt.compare(givenPassword, this.password);
+}
+
+userSchema.methods.generateTokens = function () {
+    const accessToken = jwt.sign({
+        sub: this._id,
+        role: this.role,
+    },
+        process.env.ACCESS_TOKEN_SECRET,
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '1d',
+        }
+    )
+    const refreshToken = jwt.sign({
+        sub: this._id,
+        role: this.role,
+    },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d',
+        }
+    )
+    return { accessToken, refreshToken };
 }
 
 const User = model('User', userSchema);
