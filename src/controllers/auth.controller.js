@@ -4,7 +4,11 @@ import { apiError } from '../utils/apiError.js';
 
 const tokenGeneration = async (userId) => {
     try {
-        const user = await User.findById(userId);
+        const user = await User.findOne({
+            _id: userId,
+            deletedAt: null,
+            isActive: true,
+        });
         if (!user) throw new apiError(404, "User not found");
         const { accessToken, refreshToken } = user.generateTokens();
         user.refreshToken = refreshToken;
@@ -31,7 +35,11 @@ export const register = async (req, res, next) => {
             throw new apiError(400, "All fields are required");
         }
 
-        const existingUser = await User.findOne({ $or: [{ email }, { username }] })
+        const existingUser = await User.findOne({
+            $or: [{ email }, { username }],
+            deletedAt: null,
+            isActive: true
+        })
         if (existingUser) { throw new apiError(409, "User with given email or username already exists"); }
 
         const user = await User.create({ fullName, username: username.toLowerCase(), email, password });
@@ -57,7 +65,12 @@ export const login = async (req, res, next) => {
             throw new apiError(400, "Email or Username and Password are required");
         }
 
-        const user = await User.findOne({ $or: [{ email }, { username: username?.toLowerCase() }] });
+        const user = await User.findOne({
+            $or: [{ email }, { username }],
+            deletedAt: null,
+            isActive: true
+        });
+
         if (!user) {
             throw new apiError(404, "User not found");
         }
@@ -84,7 +97,12 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
     try {
-        if (!req.user) throw new apiError(401, "Unauthorized");
+        if (!req.user) {
+            throw new apiError(401, "Unauthorized");
+        }
+        if (req.user.deletedAt) {
+            throw new apiError(401, "Account deleted");
+        }
 
         req.user.refreshToken = null;
         await req.user.save({ validateBeforeSave: false });

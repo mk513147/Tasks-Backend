@@ -39,8 +39,18 @@ const userSchema = new Schema({
     },
     deletedAt: {
         type: Date,
-        default: null
-    }, refreshToken: {
+        default: null,
+        index: true,
+    },
+    lastdeletedAt: {
+        type: Date,
+        default: null,
+    },
+    restoredAt: {
+        type: Date,
+        default: null,
+    },
+    refreshToken: {
         type: String,
     }
 }, {
@@ -77,6 +87,22 @@ userSchema.methods.generateTokens = function () {
         }
     )
     return { accessToken, refreshToken };
+}
+
+userSchema.methods.softDelete = async function () {
+    const now = new Date();
+    this.deletedAt = now;
+    this.lastdeletedAt = now;
+    this.isActive = false;
+    this.refreshToken = null;
+    await this.save({ validateBeforeSave: false });
+}
+
+userSchema.methods.restore = async function () {
+    this.restoredAt = new Date();
+    this.deletedAt = null;
+    this.isActive = true;
+    await this.save({ validateBeforeSave: false });
 }
 
 const User = model('User', userSchema);
