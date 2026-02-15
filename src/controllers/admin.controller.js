@@ -5,12 +5,6 @@ import { queryBuilder } from "../utils/queryBuilder.utils.js";
 import mongoose from "mongoose";
 import { validateId } from "../utils/validate.utils.js";
 
-// get all users  (with filter for active, deleted, all)
-// get users by id
-// update user role
-// delete user (soft delete)
-// restore user
-
 export const getUsers = async (req, res, next) => {
     try {
         const { includeDeleted, includeInactive } = req.query;
@@ -113,11 +107,13 @@ export const restoreUser = async (req, res, next) => {
     try {
         const { id } = req.params;
         validateId(id);
-        const user = await User.findById(id);
+        const user = await User.findOne({ _id: id, deletedAt: { $ne: null } });
         if (!user) {
             return next(apiError(404, "User not found"));
         }
+        await user.restore(req.user._id);
+        return apiResponse(res, 200, "User restored successfully");
     } catch (error) {
-
+        next(error);
     }
 }

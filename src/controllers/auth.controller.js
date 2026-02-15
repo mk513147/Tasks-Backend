@@ -39,12 +39,12 @@ export const register = async (req, res, next) => {
             $or: [{ email }, { username }],
             deletedAt: null,
             isActive: true
-        })
+        }).select("+password");
         if (existingUser) { throw new apiError(409, "User with given email or username already exists"); }
 
         const user = await User.create({ fullName, username: username.toLowerCase(), email, password });
 
-        const createdUser = await User.findById(user._id).select('-password');
+        const createdUser = await User.findById(user._id).lean();
         if (!createdUser) {
             throw new apiError(500, "Failed to create user");
         }
@@ -67,21 +67,26 @@ export const login = async (req, res, next) => {
 
         const user = await User.findOne({
             $or: [{ email }, { username }],
-            deletedAt: null,
-            isActive: true
-        });
-
+        }).select("+password");
         if (!user) {
-            throw new apiError(404, "User not found");
+            throw new apiError(401, "Invalid Credentials");
         }
-
         const isPasswordCorrect = await user.comparePassword(password);
         if (!isPasswordCorrect) {
             throw new apiError(401, "Invalid Credentials");
         }
 
+        if (user.deletedAt) {
+            throw new apiError(401, "Account deleted");
+        }
+
+        if (!user.isActive) {
+            throw new apiError(403, "Account is inactive")
+        }
+
         const { accessToken, refreshToken } = await tokenGeneration(user._id);
-        const loggedInUser = await User.findById(user._id).select('-password');
+        const loggedInUser = user.toObject();
+        delete loggedInUser.password;
 
         return res.status(200)
             .cookie('accessToken', accessToken, options)

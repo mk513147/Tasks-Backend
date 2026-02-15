@@ -27,7 +27,8 @@ const userSchema = new Schema({
     password: {
         type: String,
         required: true,
-        minlength: 6
+        minlength: 6,
+        select: false,
     },
     role: {
         type: String,
@@ -43,12 +44,17 @@ const userSchema = new Schema({
         default: null,
         index: true,
     },
-    lastdeletedAt: {
+    lastDeletedAt: {
         type: Date,
         default: null,
     },
     restoredAt: {
         type: Date,
+        default: null,
+    },
+    restoredBy: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
         default: null,
     },
     refreshToken: {
@@ -101,10 +107,14 @@ userSchema.methods.softDelete = async function () {
     await this.save({ validateBeforeSave: false });
 }
 
-userSchema.methods.restore = async function () {
+userSchema.methods.restore = async function (adminId) {
+    if (!this.deletedAt) {
+        throw new apiError(400, "User is not deleted");
+    }
     this.restoredAt = new Date();
     this.deletedAt = null;
     this.isActive = true;
+    this.restoredBy = adminId
     await this.save({ validateBeforeSave: false });
 }
 
