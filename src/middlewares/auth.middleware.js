@@ -15,7 +15,7 @@ export const authValidator = async (req, res, next) => {
 
         const user = await User.findById(decodedObj?.sub).select("-password");
 
-        if (!user) {
+        if (!user || user.deletedAt || !user.isActive) {
             return next(new apiError(401, "Unauthorized: User not found"));
         }
 
@@ -23,6 +23,9 @@ export const authValidator = async (req, res, next) => {
         next();
 
     } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return next(new apiError(401, "Access token expired"));
+        }
         return next(new apiError(401, "Invalid or expired access token"));
     }
 }

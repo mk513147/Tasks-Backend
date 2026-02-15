@@ -3,6 +3,7 @@ import { apiResponse } from "../utils/apiResponse.utils";
 import User from "../models/user.model";
 import { queryBuilder } from "../utils/queryBuilder.utils.js";
 import mongoose from "mongoose";
+import { validateId } from "../utils/validate.utils.js";
 
 // get all users  (with filter for active, deleted, all)
 // get users by id
@@ -53,10 +54,8 @@ export const getUserById = async (req, res, next) => {
     try {
         const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return next(apiError(400, "Invalid User ID"));
-        }
 
+        validateId(id);
         const user = await User.findById(id).select("-password").lean();
         if (!user) {
             return next(apiError(404, "User not found"));
@@ -71,11 +70,9 @@ export const getUserById = async (req, res, next) => {
 export const updateUserRole = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { role } = req.body;
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return next(apiError(400, "Invalid User ID"));
-        }
+        validateId(id);
+        const { role } = req.body;
 
         const allowedRoles = ["user", "admin"];
 
@@ -91,5 +88,36 @@ export const updateUserRole = async (req, res, next) => {
         return apiResponse(res, 200, "User role updated successfully")
     } catch (error) {
         next(error);
+    }
+}
+
+export const deleteUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        validateId(id);
+        const user = await User.findById(id);
+        if (!user) {
+            return next(apiError(404, "User not found"));
+        }
+
+        await user.softDelete();
+        return apiResponse(res, 200, "User deleted successfully");
+
+    } catch (error) {
+        next(error);
+    }
+}
+
+export const restoreUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        validateId(id);
+        const user = await User.findById(id);
+        if (!user) {
+            return next(apiError(404, "User not found"));
+        }
+    } catch (error) {
+
     }
 }

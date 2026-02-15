@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
+import { apiError } from '../utils/apiError.utils.js';
 
 
 const userSchema = new Schema({
@@ -90,9 +91,11 @@ userSchema.methods.generateTokens = function () {
 }
 
 userSchema.methods.softDelete = async function () {
+
+    if (this.deletedAt) { throw new apiError(400, "User is already deleted"); }
     const now = new Date();
     this.deletedAt = now;
-    this.lastdeletedAt = now;
+    this.lastDeletedAt = now;
     this.isActive = false;
     this.refreshToken = null;
     await this.save({ validateBeforeSave: false });
