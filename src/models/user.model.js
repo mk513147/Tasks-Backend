@@ -81,7 +81,7 @@ userSchema.methods.generateTokens = function () {
     },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '1d',
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m',
         }
     )
     const refreshToken = jwt.sign({

@@ -74,7 +74,7 @@ export const updateUserRole = async (req, res, next) => {
             return next(apiError(400, "Invalid role. Allowed values are 'user' and 'admin'"));
         }
 
-        const updatedUser = await User.findOneAndUpdate({ _id: id, deletedAt: null }, { $set: { role } }, { new: true, runValidators: true, select: "-password" });
+        const updatedUser = await User.findOneAndUpdate({ _id: id, deletedAt: null }, { $set: { role } }, { new: true, runValidators: true });
         if (!updatedUser) {
             return next(apiError(404, "User not found or has been deleted"));
         }
