@@ -1,6 +1,6 @@
 import User from '../models/user.model.js';
-import { apiError } from '../utils/apiError.utils.js';
-import { apiResponse } from '../utils/apiResponse.utils.js';
+import { ApiError } from '../utils/apiResponse.utils.js';
+import { ApiResponse } from '../utils/apiResponse.utils.js';
 
 
 const tokenGeneration = async (userId) => {
@@ -11,7 +11,7 @@ const tokenGeneration = async (userId) => {
             isActive: true,
         });
         if (!user) {
-            throw new apiError(404, "User not found");
+            throw new ApiError(404, "User not found");
         }
         const { accessToken, refreshToken } = user.generateTokens();
         user.refreshToken = refreshToken;
@@ -32,24 +32,24 @@ const options = {
 
 export const register = async (req, res, next) => {
     try {
-        const { fullName, username, email, password } = req.body;
+        const { fullName, userName, email, password } = req.body;
 
-        if ([fullName, username, email, password].some(field => field?.trim() === "")) {
-            throw new apiError(400, "All fields are required");
+        if ([fullName, userName, email, password].some(field => field?.trim() === "")) {
+            throw new ApiError(400, "All fields are required");
         }
 
         const existingUser = await User.findOne({
-            $or: [{ email }, { username }],
+            $or: [{ email }, { userName }],
             deletedAt: null,
             isActive: true
         }).select("+password");
-        if (existingUser) { throw new apiError(409, "User with given email or username already exists"); }
+        if (existingUser) { throw new ApiError(409, "User with given email or userName already exists"); }
 
-        const user = await User.create({ fullName, username: username.toLowerCase(), email: email.toLowerCase(), password });
+        const user = await User.create({ fullName, userName: userName.toLowerCase(), email: email.toLowerCase(), password });
 
         const createdUser = await User.findById(user._id).lean();
         if (!createdUser) {
-            throw new apiError(500, "Failed to create user");
+            throw new ApiError(500, "Failed to create user");
         }
 
         return res.status(201).json({ success: true, user: createdUser, message: "User registered successfully" });
@@ -62,31 +62,31 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
     try {
-        const { email, username, password } = req.body;
+        const { email, userName, password } = req.body;
 
-        if (!(email || username) || !password) {
-            throw new apiError(400, "Email or Username and Password are required");
+        if (!(email || userName) || !password) {
+            throw new ApiError(400, "Email or userName and Password are required");
         }
 
         const user = await User.findOne({
-            $or: [{ email }, { username }],
+            $or: [{ email }, { userName }],
         }).select("+password");
 
         if (!user) {
-            throw new apiError(401, "Invalid Credentials");
+            throw new ApiError(401, "Invalid Credentials");
         }
         const isPasswordCorrect = await user.comparePassword(password);
 
         if (!isPasswordCorrect) {
-            throw new apiError(401, "Invalid Credentials");
+            throw new ApiError(401, "Invalid Credentials");
         }
 
         if (user.deletedAt) {
-            throw new apiError(401, "Account deleted");
+            throw new ApiError(401, "Account deleted");
         }
 
         if (!user.isActive) {
-            throw new apiError(403, "Account is inactive")
+            throw new ApiError(403, "Account is inactive")
         }
 
         const { accessToken, refreshToken } = await tokenGeneration(user._id);
@@ -108,10 +108,10 @@ export const login = async (req, res, next) => {
 export const logout = async (req, res, next) => {
     try {
         if (!req.user) {
-            throw new apiError(401, "Unauthorized");
+            throw new ApiError(401, "Unauthorized");
         }
         if (req.user.deletedAt) {
-            throw new apiError(401, "Account deleted");
+            throw new ApiError(401, "Account deleted");
         }
 
         req.user.refreshToken = null;
@@ -137,15 +137,15 @@ export const updateUserRole = async (req, res, next) => {
         const allowedRoles = ["user", "admin"];
 
         if (!allowedRoles.includes(role)) {
-            return next(apiError(400, "Invalid role. Allowed values are 'user' and 'admin'"));
+            return next(new ApiError(400, "Invalid role. Allowed values are 'user' and 'admin'"));
         }
 
         const updatedUser = await User.findOneAndUpdate({ _id: id, deletedAt: null }, { $set: { role } }, { new: true, runValidators: true });
         if (!updatedUser) {
-            return next(apiError(404, "User not found or has been deleted"));
+            return next(new ApiError(404, "User not found or has been deleted"));
         }
 
-        return apiResponse(res, 200, "User role updated successfully")
+        return ApiResponse(res, 200, "User role updated successfully")
     } catch (error) {
         next(error);
     }
@@ -158,11 +158,11 @@ export const deleteUser = async (req, res, next) => {
         validateId(id);
         const user = await User.findById(id);
         if (!user) {
-            return next(apiError(404, "User not found"));
+            return next(new ApiError(404, "User not found"));
         }
 
         await user.softDelete();
-        return apiResponse(res, 200, "User deleted successfully");
+        return ApiResponse(res, 200, "User deleted successfully");
 
     } catch (error) {
         next(error);
@@ -175,10 +175,10 @@ export const restoreUser = async (req, res, next) => {
         validateId(id);
         const user = await User.findOne({ _id: id, deletedAt: { $ne: null } });
         if (!user) {
-            return next(apiError(404, "User not found"));
+            return next(new ApiError(404, "User not found"));
         }
         await user.restore(req.user._id);
-        return apiResponse(res, 200, "User restored successfully");
+        return ApiResponse(res, 200, "User restored successfully");
     } catch (error) {
         next(error);
     }
@@ -188,21 +188,21 @@ export const resetPassword = async (req, res, next) => {
     try {
         const { currentPassword, newPassword } = req.body;
         if (!currentPassword?.trim() || !newPassword?.trim()) {
-            throw new apiError(400, "Fields should not be empty");
+            throw new ApiError(400, "Fields should not be empty");
         }
 
         if (currentPassword === newPassword) {
-            throw new apiError(400, "New password must be different from current password");
+            throw new ApiError(400, "New password must be different from current password");
         }
 
         const user = req.user;
         if (!user) {
-            throw new apiError(401, "Invalid credentials");
+            throw new ApiError(401, "Invalid credentials");
         }
 
         const isPasswordCorrect = await user.comparePassword(currentPassword);
         if (!isPasswordCorrect) {
-            throw new apiError(401, "Invalid credentials");
+            throw new ApiError(401, "Invalid credentials");
         }
 
         user.password = newPassword;
@@ -224,17 +224,17 @@ export const refreshToken = async (req, res, next) => {
             || req.body?.refreshToken
             || req.header("Authorization")?.replace("Bearer ", "");
         if (!incomingRefreshToken) {
-            throw new apiError(401, "Unauthorized");
+            throw new ApiError(401, "Unauthorized");
         }
 
         const decodedobj = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
 
         const user = await User.findOne({ _id: decodedobj.sub, deletedAt: null, isActive: true });
         if (!user) {
-            throw new apiError(401, "Unauthorized")
+            throw new ApiError(401, "Unauthorized")
         }
         if (!user.refreshToken || user.refreshToken !== incomingRefreshToken) {
-            throw new apiError(401, "Unauthorized");
+            throw new ApiError(401, "Unauthorized");
         }
 
         const accessToken = jwt.sign({
@@ -251,6 +251,6 @@ export const refreshToken = async (req, res, next) => {
             .cookie('accessToken', accessToken, options)
             .json({ success: true, message: "Access token refreshed successfully", accessToken });
     } catch (error) {
-        return next(new apiError(401, "Invalid or expired refresh token"));
+        return next(new ApiError(401, "Invalid or expired refresh token"));
     }
 }

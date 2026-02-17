@@ -1,11 +1,11 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken';
-import { apiError } from '../utils/apiError.utils.js';
+import { ApiError } from '../utils/apiError.utils.js';
 
 
 const userSchema = new Schema({
-    username: {
+    userName: {
         type: String,
         required: true,
         trim: true,
@@ -98,7 +98,7 @@ userSchema.methods.generateTokens = function () {
 
 userSchema.methods.softDelete = async function () {
 
-    if (this.deletedAt) { throw new apiError(400, "User is already deleted"); }
+    if (this.deletedAt) { throw new ApiError(400, "User is already deleted"); }
     const now = new Date();
     this.deletedAt = now;
     this.lastDeletedAt = now;
@@ -109,7 +109,7 @@ userSchema.methods.softDelete = async function () {
 
 userSchema.methods.restore = async function (adminId) {
     if (!this.deletedAt) {
-        throw new apiError(400, "User is not deleted");
+        throw new ApiError(400, "User is not deleted");
     }
     this.restoredAt = new Date();
     this.deletedAt = null;
