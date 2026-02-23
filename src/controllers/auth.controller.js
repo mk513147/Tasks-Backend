@@ -1,5 +1,5 @@
 import User from '../models/user.model.js';
-import { ApiError } from '../utils/apiResponse.utils.js';
+import { ApiError } from '../utils/apiError.utils.js';
 import { ApiResponse } from '../utils/apiResponse.utils.js';
 
 

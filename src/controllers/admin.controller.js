@@ -1,6 +1,6 @@
 import { apiError } from "../utils/apiError.utils";
 import { apiResponse } from "../utils/apiResponse.utils";
-import User from "../models/user.model";
+import User from "../models/user.model.js";
 import { queryBuilder } from "../utils/queryBuilder.utils.js";
 import mongoose from "mongoose";
 import { validateId } from "../utils/validate.utils.js";

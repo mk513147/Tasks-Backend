@@ -1,8 +1,8 @@
 import mongoose from "mongoose"
-import { apiError } from "./apiError.utils.js"
+import { ApiError } from "./apiError.utils.js"
 
 export const validateId = (id) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        throw new apiError(400, "Invalid ID");
+        throw new ApiError(400, "Invalid ID");
     }
 }

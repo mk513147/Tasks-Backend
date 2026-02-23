@@ -11,8 +11,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/tasks', taskRouter);
-api.use('/api/users', userRouter);
-
+app.use('/api/users', userRouter);
+app.use('api/auth', authRouter);
 
 app.get('/', (req, res) => {
     res.send('Baba Ji ki booty!!');
