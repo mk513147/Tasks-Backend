@@ -107,13 +107,6 @@ export const login = async (req, res, next) => {
 
 export const logout = async (req, res, next) => {
     try {
-        if (!req.user) {
-            throw new ApiError(401, "Unauthorized");
-        }
-        if (req.user.deletedAt) {
-            throw new ApiError(401, "Account deleted");
-        }
-
         req.user.refreshToken = null;
         await req.user.save({ validateBeforeSave: false });
         res
