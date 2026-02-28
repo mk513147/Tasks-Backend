@@ -37,7 +37,7 @@ const taskSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    recurrency: {
+    recurrence: {
         type: reccurenceSchema,
         required: function () { return this.repeating === true },
     },
