@@ -1,9 +1,9 @@
-import { apiError } from "../utils/apiError.utils";
-import { apiResponse } from "../utils/apiResponse.utils";
-import User from "../models/user.model.js";
-import { queryBuilder } from "../utils/queryBuilder.utils.js";
+import { apiError } from "@utils/apiError.utils.js";
+import { apiResponse } from "@utils/apiResponse.utils.js";
+import User from "./models/user.model.js";
+import { queryBuilder } from "@utils/queryBuilder.utils.js";
 import mongoose from "mongoose";
-import { validateId } from "../utils/validate.utils.js";
+import { validateId } from "@utils/validate.utils.js";
 
 export const getUsers = async (req, res, next) => {
     try {

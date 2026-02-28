@@ -1,6 +1,6 @@
-import Task from "../models/task.model.js";
-import { ApiError } from "../utils/apiError.utils.js";
-import { ApiResponse } from "../utils/apiResponse.utils.js";
+import Task from "./task.model.js";
+import { ApiError } from "#utils/apiError.utils.js";
+import { ApiResponse } from "#utils/apiResponse.utils.js";
 // createTask
 
 // getMyTasks
@@ -38,13 +38,7 @@ export const createTask = asyncHandler(async (req, res, next) => {
     return res.status(201).json(new ApiResponse(201, task, "Task created successfully"));
 })
 
-// export const createTask = async (req, res) => {
 
-//         const task = await Task.create(req.body);
-
-//         return res.status(201).json(new ApiResponse(201, task, "Task created successfully"));
-
-// }
 
 export const getTasks = async (req, res) => {
     try {

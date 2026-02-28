@@ -41,15 +41,21 @@ const taskSchema = new Schema({
         type: reccurenceSchema,
         required: function () { return this.repeating === true },
     },
+    status: {
+        type: String,
+        enum: ["pending", "completed", "archived"],
+        default: "pending",
+    },
     startDate: {
         type: Date,
+        required: true,
     },
     endDate: {
         type: Date,
     }
 
 
-}, { timestamps: true });
+}, { timestamps: true }).index({ userId: 1 });
 
 const Task = model("Task", taskSchema);
 

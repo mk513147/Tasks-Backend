@@ -13,6 +13,11 @@
 	"author": "",
 	"license": "ISC",
 	"type": "module",
+	"imports": {
+		"#utils/*": "./src/utils/*",
+		"#middlewares/*": "./src/middlewares/*",
+		"#modules/": "./src/modules/"
+	},
 	"dependencies": {
 		"bcrypt": "^6.0.0",
 		"cookie-parser": "^1.4.7",
@@ -20,7 +25,8 @@
 		"dotenv": "^17.2.3",
 		"express": "^5.2.1",
 		"jsonwebtoken": "^9.0.3",
-		"mongoose": "^9.1.5"
+		"mongoose": "^9.1.5",
+		"zod": "^4.3.6"
 	},
 	"devDependencies": {
 		"eslint": "^9.39.2",
