@@ -1,7 +1,7 @@
 import User from '../models/user.model.js';
 import { ApiError } from '../utils/apiError.utils.js';
 import { ApiResponse } from '../utils/apiResponse.utils.js';
-
+import { validateId } from '../utils/validate.utils.js';
 
 const tokenGeneration = async (userId) => {
     try {
@@ -167,11 +167,13 @@ export const restoreUser = async (req, res, next) => {
         const { id } = req.params;
         validateId(id);
         const user = await User.findOne({ _id: id, deletedAt: { $ne: null } });
+
         if (!user) {
             return next(new ApiError(404, "User not found"));
         }
-        await user.restore(req.user._id);
-        return ApiResponse(res, 200, "User restored successfully");
+
+        await user.restore(null);
+        return res.status(200).json(new ApiResponse(200, "User restored successfully"));
     } catch (error) {
         next(error);
     }
