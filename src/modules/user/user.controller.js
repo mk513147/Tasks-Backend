@@ -1,6 +1,6 @@
 //TODO: Fine for phase need refining for later phases 
 
-import User from './models/user.model.js';
+import User from './user.model.js';
 import { ApiError } from '#utils/apiError.utils.js';
 import { ApiResponse } from '#utils/apiResponse.utils.js';
 import { validateId } from '#utils/validate.utils.js';

@@ -1,7 +1,7 @@
-import User from '../models/user.model.js';
-import { ApiError } from '../utils/apiError.utils.js';
-import { ApiResponse } from '../utils/apiResponse.utils.js';
-import { validateId } from '../utils/validate.utils.js';
+import User from '#modules/user/user.model.js';
+import { ApiError } from '#utils/apiError.utils.js';
+import { ApiResponse } from '#utils/apiResponse.utils.js';
+import { validateId } from '#utils/validate.utils.js';
 
 const tokenGeneration = async (userId) => {
     try {

@@ -16,7 +16,7 @@
 	"imports": {
 		"#utils/*": "./src/utils/*",
 		"#middlewares/*": "./src/middlewares/*",
-		"#modules/": "./src/modules/"
+		"#modules/*": "./src/modules/*"
 	},
 	"dependencies": {
 		"bcrypt": "^6.0.0",
