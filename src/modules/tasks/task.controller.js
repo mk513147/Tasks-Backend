@@ -2,7 +2,6 @@ import Task from "./task.model.js";
 import { ApiError } from "#utils/apiError.utils.js";
 import { ApiResponse } from "#utils/apiResponse.utils.js";
 import { asyncHandler } from "#utils/asyncHandler.js"
-// createTask
 
 // getMyTasks
 
@@ -41,14 +40,9 @@ export const createTask = asyncHandler(async (req, res, next) => {
 
 
 
-export const getTasks = async (req, res) => {
-    try {
-        const tasks = await Task.find();
-        res.status(200).json(tasks);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-}
+export const getMyTasks = asyncHandler(async (req, res, next) => {
+
+})
 
 export const deleteTask = async (req, res) => {
     try {
